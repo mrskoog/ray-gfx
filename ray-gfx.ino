@@ -45,6 +45,7 @@ typedef struct Player {
 
 void doRayCasting(Player *player);
 void drawWallLine(uint8_t x, uint8_t h);
+void rotatePlayer(Player *player, uint8_t right);
 
 void setup()  {
   D(Serial.begin(9600));
@@ -53,7 +54,6 @@ void setup()  {
   display.clearDisplay(); //clear adafruit logo from buffer
   display.display(); //init display
 }
-
 
 void loop() {
   Player player;
@@ -68,17 +68,20 @@ void loop() {
     display.clearDisplay();
     doRayCasting(&player);
     display.display();
-
-
-    double oldXDir = player.dirX;
-    player.dirX = player.dirX * cos(-ROTSPEED) - player.dirY * sin(-ROTSPEED);
-    player.dirY = oldXDir * sin(-ROTSPEED) + player.dirY * cos(-ROTSPEED);
-
-    double oldplaneX = player.planeX;
-    player.planeX = player.planeX * cos(-ROTSPEED) - player.planeY * sin(-ROTSPEED);
-    player.planeY = oldplaneX * sin(-ROTSPEED) + player.planeY * cos(-ROTSPEED);
+    rotatePlayer(&player, 0);
   }
+}
 
+void rotatePlayer(Player *player, uint8_t right){
+    double rotation = right? -ROTSPEED : ROTSPEED;
+
+    double oldXDir = player->dirX;
+    player->dirX = player->dirX * cos(rotation) - player->dirY * sin(rotation);
+    player->dirY = oldXDir * sin(rotation) + player->dirY * cos(rotation);
+
+    double oldplaneX = player->planeX;
+    player->planeX = player->planeX * cos(rotation) - player->planeY * sin(rotation);
+    player->planeY = oldplaneX * sin(rotation) + player->planeY * cos(rotation);
 }
 
 void drawWallLine(uint8_t x, uint8_t h) {
