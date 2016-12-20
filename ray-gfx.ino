@@ -2,7 +2,7 @@
 #include <SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-
+#include <avr/pgmspace.h>
 
 #define D(x)
 
@@ -16,23 +16,66 @@ Adafruit_SSD1306 display(OLED_RESET);
 #define DISP_HEIGHT	64
 #define VIEW_RANGE 8
 
-
-
 /*Game*/
-#define ROTSPEED 0.045
+#define ROTSPEED 0.1
+#define STEP_SIZE 0.2
+#define UP_BUTTON 10
+#define LEFT_BUTTON 9
+#define RIGHT_BUTTON 11
+#define RIGHT 0
+#define LEFT 1
 
-const uint8_t level_map[][9] =
+
+const uint8_t level_map[][35] PROGMEM =
 {
-  {1, 1, 1, 1, 1, 1, 1, 1, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 1, 1, 1, 1, 1, 1, 1, 1}
+  {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+  {1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1},
+  {1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1},
+  {1,0,0,1,0,0,0,0,0,1,1,1,1,0,0,1,0,0,1,1,1,1,1,1,0,0,1,0,0,0,1,0,0,0,1},
+  {1,0,0,1,0,0,0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0,0,1,0,0,1,0,0,0,1,0,0,0,1},
+  {1,0,0,1,0,0,0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,1},
+  {1,0,0,1,0,0,0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,1},
+  {1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1},
+  {1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+  {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+  {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1},
+  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1},
+  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1},
+  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1},
+  {1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,0,0,1,0,0,1,1,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,0,0,1,0,0,0,1,1,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+  {1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+  {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
 };
+// const uint8_t level_map[][8] PROGMEM =
+// {
+//   {1,1,1,1,1,1,1,1},
+//   {1,0,0,0,0,0,0,1},
+//   {1,0,0,0,0,0,0,1},
+//   {1,0,0,0,0,0,0,1},
+//   {1,0,0,0,0,0,0,1},
+//   {1,0,0,0,0,0,0,1},
+//   {1,0,0,0,0,0,0,1},
+//   {1,1,1,1,1,1,1,1}
+// };
+
 
 typedef struct Player {
   double x;
@@ -44,35 +87,40 @@ typedef struct Player {
 } Player;
 
 void doRayCasting(Player *player);
-void drawWallLine(uint8_t x, uint8_t h);
+void drawWallLine(uint8_t x, uint8_t h, uint8_t side);
 void rotatePlayer(Player *player, uint8_t right);
+void movePlayer(Player *player);
+void drawDottedLine(int16_t x, int16_t y0, int16_t y1);
 
 void setup()  {
   D(Serial.begin(9600));
 
+  pinMode(UP_BUTTON, INPUT_PULLUP);
+  pinMode(LEFT_BUTTON, INPUT_PULLUP);
+  pinMode(RIGHT_BUTTON, INPUT_PULLUP);
+
   display.begin(SSD1306_SWITCHCAPVCC, I2C_ADDRESS);  // initialize with the I2C addr 0x3C (for the 128x64)
-  display.clearDisplay(); //clear adafruit logo from buffer
+  display.clearDisplay();
   display.display(); //init display
 }
 
 void loop() {
   Player player;
-  player.x = 4;
-  player.y = 3;
-  player.dirX = -1;
+  player.x = 2;
+  player.y = 2;
+  player.dirX = 1;
   player.dirY = 0;
   player.planeX = 0;
   player.planeY = 0.66;
-
+  display.clearDisplay();
+  doRayCasting(&player);
+  display.display();
   while (1) {
-    display.clearDisplay();
-    doRayCasting(&player);
-    display.display();
-    rotatePlayer(&player, 0);
+    movePlayer(&player);
   }
 }
 
-void rotatePlayer(Player *player, uint8_t right){
+void rotatePlayer(Player *player, uint8_t right) {
     double rotation = right? -ROTSPEED : ROTSPEED;
 
     double oldXDir = player->dirX;
@@ -84,7 +132,55 @@ void rotatePlayer(Player *player, uint8_t right){
     player->planeY = oldplaneX * sin(rotation) + player->planeY * cos(rotation);
 }
 
-void drawWallLine(uint8_t x, uint8_t h) {
+void movePlayer(Player *player) {
+  if (digitalRead(UP_BUTTON) == 0) {
+    double nextStepX = player->dirX * STEP_SIZE;
+    double nextStepY = player->dirY * STEP_SIZE;
+
+   // if (pgm_read_byte(&level_map[int(player->y)][int(player->x + nextStepX)])) {
+      player->x += nextStepX;
+   // }
+
+   // if (pgm_read_byte(&level_map[int(player->y + nextStepY)][int(player->x)])) {
+      player->y += nextStepY;
+   // }
+    // D(Serial.print("palyer x,y"));
+    // D(Serial.print(player->x));
+    // D(Serial.print(","));
+    // D(Serial.println(player->y));
+    display.clearDisplay();
+    doRayCasting(player);
+    display.display();
+  }
+
+  if (digitalRead(LEFT_BUTTON) == 0) {
+    rotatePlayer(player, LEFT);
+    display.clearDisplay();
+    doRayCasting(player);
+    display.display();
+  }
+
+  if (digitalRead(RIGHT_BUTTON) == 0) {
+    rotatePlayer(player, RIGHT);
+    display.clearDisplay();
+    doRayCasting(player);
+    display.display();
+  }
+}
+
+
+void drawDottedLine(int16_t x, int16_t y0, int16_t y1) {
+  uint16_t color = BLACK;
+  static uint8_t i = 0;
+  for (; y0>=y1; y0--) {
+    i ? i=0:i=1;
+    i ? color=WHITE:color=BLACK;
+    display.drawPixel(x, y0, color);
+  }
+  
+}
+
+void drawWallLine(uint8_t x, uint8_t h, uint8_t side) {
   uint8_t drawStart = CAMERA_HEIGHT + (h >> 1);
   uint8_t drawEnd = CAMERA_HEIGHT - (h >> 1);
   if (drawStart < 0) {
@@ -93,8 +189,11 @@ void drawWallLine(uint8_t x, uint8_t h) {
   if (drawEnd > DISP_HEIGHT) {
     drawEnd = DISP_HEIGHT;
   }
-
-  display.drawLine(x, drawStart , x, drawEnd, WHITE);
+  if (side){
+    display.drawLine(x, drawStart , x, drawEnd, WHITE);
+  } else {
+    drawDottedLine(x, drawStart , drawEnd); //add shade to y-axis wall to give better contrast
+  }
 }
 
 void doRayCasting(Player *player) {
@@ -160,7 +259,6 @@ void doRayCasting(Player *player) {
       sideDistY = (mapY + 1 - player->y) * deltaDistY;
     }
 
-    uint8_t i = 0;
     //DDA
     while (!hit ) {
       if (sideDistX < sideDistY) {
@@ -174,9 +272,10 @@ void doRayCasting(Player *player) {
       }
 
       // Check if ray has hit a wall
-      level_map[mapY][mapX] != 0 ? hit = 1 : hit = 0;
+      uint8_t mapData = pgm_read_byte(&level_map[mapY][mapX]);
 
-      i++;
+      mapData != 0 ? hit = 1 : hit = 0;
+
     }
     // D(Serial.print("map: "));
     // D(Serial.print(mapY));
@@ -193,11 +292,12 @@ void doRayCasting(Player *player) {
     else {
       perpWallDist = sqrt(((mapY - player->y + (1 - stepY) / 2) / rayDirY) * ((mapY - player->y + (1 - stepY) / 2) / rayDirY));
     }
-
+    
     // D(Serial.print("\nperpWallDist: "));
     // D(Serial.println(perpWallDist, 3));
+    
     uint8_t lineHeight;
-    if (perpWallDist > 0) {
+    if (perpWallDist >= 1) { //values under 1 makes screen glitch
       lineHeight = abs((int)(DISP_HEIGHT / perpWallDist));
     }
     else {
@@ -205,7 +305,7 @@ void doRayCasting(Player *player) {
     }
 
     if (lineHeight >= 1) {
-      drawWallLine(x, lineHeight);
+      drawWallLine(x, lineHeight, side);
     }
   }
 }
