@@ -3,6 +3,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <avr/pgmspace.h>
+#include <TimerOne.h>
 
 #define D(x)
 
@@ -92,6 +93,9 @@ void rotatePlayer(Player *player, uint8_t right);
 void movePlayer(Player *player);
 void drawDottedLine(int16_t x, int16_t y0, int16_t y1);
 void drawLine(int16_t x, int16_t y0, int16_t y1);
+void timer_IRQ();
+
+volatile uint8_t timer_flag = 0;
 
 void setup()  {
   D(Serial.begin(9600));
@@ -99,6 +103,9 @@ void setup()  {
   pinMode(UP_BUTTON, INPUT_PULLUP);
   pinMode(LEFT_BUTTON, INPUT_PULLUP);
   pinMode(RIGHT_BUTTON, INPUT_PULLUP);
+
+  Timer1.initialize(50000); 
+  Timer1.attachInterrupt(timer_IRQ);
 
   display.begin(SSD1306_SWITCHCAPVCC, I2C_ADDRESS);  // initialize with the I2C addr 0x3C (for the 128x64)
   display.clearDisplay();
@@ -117,8 +124,18 @@ void loop() {
   doRayCasting(&player);
   display.display();
   while (1) {
-    movePlayer(&player);
+    if (timer_flag) {
+      display.clearDisplay();
+      movePlayer(&player);
+      doRayCasting(&player);
+      display.display();
+      timer_flag = 0;
+    }
   }
+}
+
+void timer_IRQ(){
+  timer_flag = 1;
 }
 
 void rotatePlayer(Player *player, uint8_t right) {
@@ -138,34 +155,21 @@ void movePlayer(Player *player) {
     double nextStepX = player->dirX * STEP_SIZE;
     double nextStepY = player->dirY * STEP_SIZE;
 
-  if (pgm_read_byte(&level_map[int(player->y)][int(player->x + nextStepX)]) == 0) {
-      player->x += nextStepX;
-   }
+    if (pgm_read_byte(&level_map[int(player->y)][int(player->x + nextStepX)]) == 0) {
+        player->x += nextStepX;
+     }
 
-  if (pgm_read_byte(&level_map[int(player->y + nextStepY)][int(player->x)]) == 0) {
-      player->y += nextStepY;
-   }
-    // D(Serial.print("palyer x,y"));
-    // D(Serial.print(player->x));
-    // D(Serial.print(","));
-    // D(Serial.println(player->y));
-    display.clearDisplay();
-    doRayCasting(player);
-    display.display();
+    if (pgm_read_byte(&level_map[int(player->y + nextStepY)][int(player->x)]) == 0) {
+        player->y += nextStepY;
+     }
   }
 
   if (digitalRead(LEFT_BUTTON) == 0) {
     rotatePlayer(player, LEFT);
-    display.clearDisplay();
-    doRayCasting(player);
-    display.display();
   }
 
   if (digitalRead(RIGHT_BUTTON) == 0) {
     rotatePlayer(player, RIGHT);
-    display.clearDisplay();
-    doRayCasting(player);
-    display.display();
   }
 }
 
