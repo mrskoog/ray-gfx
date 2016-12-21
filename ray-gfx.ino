@@ -91,6 +91,7 @@ void drawWallLine(uint8_t x, uint8_t h, uint8_t side);
 void rotatePlayer(Player *player, uint8_t right);
 void movePlayer(Player *player);
 void drawDottedLine(int16_t x, int16_t y0, int16_t y1);
+void drawLine(int16_t x, int16_t y0, int16_t y1);
 
 void setup()  {
   D(Serial.begin(9600));
@@ -137,13 +138,13 @@ void movePlayer(Player *player) {
     double nextStepX = player->dirX * STEP_SIZE;
     double nextStepY = player->dirY * STEP_SIZE;
 
-   // if (pgm_read_byte(&level_map[int(player->y)][int(player->x + nextStepX)])) {
+  if (pgm_read_byte(&level_map[int(player->y)][int(player->x + nextStepX)]) == 0) {
       player->x += nextStepX;
-   // }
+   }
 
-   // if (pgm_read_byte(&level_map[int(player->y + nextStepY)][int(player->x)])) {
+  if (pgm_read_byte(&level_map[int(player->y + nextStepY)][int(player->x)]) == 0) {
       player->y += nextStepY;
-   // }
+   }
     // D(Serial.print("palyer x,y"));
     // D(Serial.print(player->x));
     // D(Serial.print(","));
@@ -168,6 +169,12 @@ void movePlayer(Player *player) {
   }
 }
 
+void drawLine(int16_t x, int16_t y0, int16_t y1) {
+  while (y0>=y1) {
+    display.drawPixel(x, y0, WHITE);
+    y0--;
+  }
+}
 
 void drawDottedLine(int16_t x, int16_t y0, int16_t y1) {
   uint16_t color = BLACK;
@@ -177,7 +184,6 @@ void drawDottedLine(int16_t x, int16_t y0, int16_t y1) {
     i ? color=WHITE:color=BLACK;
     display.drawPixel(x, y0, color);
   }
-  
 }
 
 void drawWallLine(uint8_t x, uint8_t h, uint8_t side) {
