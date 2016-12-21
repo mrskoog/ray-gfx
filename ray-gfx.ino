@@ -91,8 +91,8 @@ void doRayCasting(Player *player);
 void drawWallLine(uint8_t x, uint8_t h, uint8_t side);
 void rotatePlayer(Player *player, uint8_t right);
 void movePlayer(Player *player);
-void drawDottedLine(int16_t x, int16_t y0, int16_t y1);
 void drawLine(int16_t x, int16_t y0, int16_t y1);
+void drawShadedLine(int16_t x, int16_t y0, int16_t y1);
 void timer_IRQ();
 
 volatile uint8_t timer_flag = 0;
@@ -180,9 +180,9 @@ void drawLine(int16_t x, int16_t y0, int16_t y1) {
   }
 }
 
-void drawDottedLine(int16_t x, int16_t y0, int16_t y1) {
+void drawShadedLine(int16_t x, int16_t y0, int16_t y1) {
   uint16_t color = BLACK;
-  static uint8_t i = 0;
+  uint8_t i = x%2;
   for (; y0>=y1; y0--) {
     i ? i=0:i=1;
     i ? color=WHITE:color=BLACK;
@@ -200,10 +200,15 @@ void drawWallLine(uint8_t x, uint8_t h, uint8_t side) {
     drawEnd = DISP_HEIGHT;
   }
   if (side){
-    display.drawLine(x, drawStart , x, drawEnd, WHITE);
+    drawLine(x, drawStart , drawEnd);
   } else {
-    drawDottedLine(x, drawStart , drawEnd); //add shade to y-axis wall to give better contrast
+    drawShadedLine(x, drawStart , drawEnd); //add shade to y-axis wall to give better contrast
   }
+  drawFloorLine(x, drawStart);
+}
+
+void drawFloorLine(uint8_t x, uint8_t drawEnd) {
+  drawLine(x, DISP_HEIGHT ,drawEnd + 2);
 }
 
 void doRayCasting(Player *player) {
