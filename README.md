@@ -4,4 +4,5 @@ This is a ray casting graphic demo that runs on a Arduion together with a ssd130
 This code is based on the great tutorial on ray casting by Lode Vandevenne
 http://lodev.org/cgtutor/raycasting.html
 
+![img_20161221_224143](https://cloud.githubusercontent.com/assets/3979799/21407306/18ff2894-c7d0-11e6-8316-9bfca1d234d7.jpg)
 
