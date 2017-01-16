@@ -70,7 +70,7 @@ void rotatePlayer(Player *player, uint8_t right) {
 }
 
 void movePlayer(Player *player) {
-  if (digitalRead(UP_BUTTON) == 0) {
+  if ( analogRead(A1) < 200) {
     double nextStepX = player->dirX * STEP_SIZE;
     double nextStepY = player->dirY * STEP_SIZE;
 
@@ -83,11 +83,24 @@ void movePlayer(Player *player) {
      }
   }
 
-  if (digitalRead(LEFT_BUTTON) == 0) {
+    if (analogRead(A1) > 700) {
+    double nextStepX = player->dirX * STEP_SIZE;
+    double nextStepY = player->dirY * STEP_SIZE;
+
+    if (pgm_read_byte(&level_map[int(player->y)][int(player->x + nextStepX)]) == 0) {
+        player->x -= nextStepX;
+     }
+
+    if (pgm_read_byte(&level_map[int(player->y + nextStepY)][int(player->x)]) == 0) {
+        player->y -= nextStepY;
+     }
+  }
+
+  if (analogRead(A0) > 700) {
     rotatePlayer(player, LEFT);
   }
 
-  if (digitalRead(RIGHT_BUTTON) == 0) {
+  if (analogRead(A0) < 200) {
     rotatePlayer(player, RIGHT);
   }
 }
