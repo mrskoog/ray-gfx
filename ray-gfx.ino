@@ -34,7 +34,7 @@ void setup()  {
 void loop() {
   Player player;
   player.x = 2;
-  player.y = 2;
+  player.y = 3;
   player.dirX = 1;
   player.dirY = 0;
   player.planeX = 0;
@@ -48,6 +48,7 @@ void loop() {
       movePlayer(&player);
       doRayCasting(&player);
       disp_player_posistion(&player);
+      drawHUD();
       display.display();
       timer_flag = 0;
     }

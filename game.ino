@@ -45,6 +45,11 @@ const uint8_t level_map[][35] PROGMEM =
   {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
 };
 
+const uint8_t gunBitmap [] PROGMEM = {
+0x01, 0x80, 0x01, 0x80, 0x1f, 0xf8, 0x20, 0x04, 0x2f, 0xf4, 0x2f, 0xf4, 0x2f, 0xf4, 0x2f, 0xf4,
+0x2f, 0xf4, 0x1f, 0xf8, 0x48, 0x08, 0xb7, 0xfe, 0x90, 0x02, 0x90, 0x01, 0x80, 0x02, 0x80, 0x01,
+};
+
 void disp_player_posistion (Player *player) {
   int n = 0;
   char buffer [10];
@@ -54,7 +59,10 @@ void disp_player_posistion (Player *player) {
     display.drawChar(1+n*6, 56, buffer[n], BLACK, WHITE, 1);
     n--;
   }
-  
+}
+
+void drawHUD() {
+  display.drawBitmap((DISP_WIDTH/2) - 6, DISP_HEIGHT-16, gunBitmap, 16, 16, BLACK);
 }
 
 void rotatePlayer(Player *player, uint8_t right) {
