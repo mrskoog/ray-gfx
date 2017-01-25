@@ -86,7 +86,10 @@ void drawTarget(Player *player, Target *target) {
 
       int16_t spriteHeight = abs(int(DISP_HEIGHT / (transformY)));
 
-      display.fillCircle(spriteScreenX, CAMERA_HEIGHT, spriteHeight >> 3, BLACK);
+      display.fillCircle(spriteScreenX, CAMERA_HEIGHT, spriteHeight >> 2, BLACK);
+      display.fillCircle(spriteScreenX, CAMERA_HEIGHT, spriteHeight >> 3, WHITE);
+      display.fillCircle(spriteScreenX, CAMERA_HEIGHT, spriteHeight >> 4, BLACK);
+
     }
   }
 }
@@ -104,9 +107,10 @@ void rotatePlayer(Player *player, uint8_t right) {
 }
 
 void movePlayer(Player *player) {
+  double nextStepX = player->dirX * STEP_SIZE;
+  double nextStepY = player->dirY * STEP_SIZE;
+
   if ( analogRead(A1) < 200) {
-    double nextStepX = player->dirX * STEP_SIZE;
-    double nextStepY = player->dirY * STEP_SIZE;
 
     if (pgm_read_byte(&level_map[int(player->y)][int(player->x + nextStepX)]) != 1) {
         player->x += nextStepX;
@@ -118,14 +122,12 @@ void movePlayer(Player *player) {
   }
 
     if (analogRead(A1) > 700) {
-    double nextStepX = player->dirX * STEP_SIZE;
-    double nextStepY = player->dirY * STEP_SIZE;
 
-    if (pgm_read_byte(&level_map[int(player->y)][int(player->x + nextStepX)]) != 1) {
+    if (pgm_read_byte(&level_map[int(player->y)][int(player->x - nextStepX)]) != 1) {
         player->x -= nextStepX;
      }
 
-    if (pgm_read_byte(&level_map[int(player->y + nextStepY)][int(player->x)]) != 1) {
+    if (pgm_read_byte(&level_map[int(player->y - nextStepY)][int(player->x)]) != 1) {
         player->y -= nextStepY;
      }
   }
