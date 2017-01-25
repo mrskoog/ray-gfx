@@ -65,6 +65,32 @@ void drawHUD() {
   display.drawBitmap((DISP_WIDTH/2) - 6, DISP_HEIGHT-16, gunBitmap, 16, 16, BLACK);
 }
 
+void drawTarget(Player *player, Target *target) {
+  for (uint8_t i  = 0; i < NBR_OF_TARGETS; i++) {
+    if (target[i].visible) {
+      //translate sprite position to relative to camer
+      double spriteX = target[i].xPos - player->x;
+      double spriteY = target[i].yPos - player->y;
+
+      //transform sprite with the inverse camera matrix (projection in camera plain)
+      // [ planeX   dirX ] -1                                       [ dirY      -dirX ]
+      // [               ]       =  1/(planeX*dirY-dirX*planeY) *   [                 ]
+      // [ planeY   dirY ]                                          [ -planeY  planeX ]
+
+      double invDet = 1.0 / (player->planeX * player->dirY - player->dirX * player->planeY); //required for correct matrix multiplication
+
+      double transformX = invDet * (player->dirY * spriteX - player->dirX * spriteY);
+      double transformY = invDet * (-1*player->planeY * spriteX + player->planeX * spriteY);
+
+      int16_t spriteScreenX = int((DISP_WIDTH / 2) * (1 + transformX / transformY));
+
+      int16_t spriteHeight = abs(int(DISP_HEIGHT / (transformY)));
+
+      display.fillCircle(spriteScreenX, CAMERA_HEIGHT, spriteHeight >> 3, BLACK);
+    }
+  }
+}
+
 void rotatePlayer(Player *player, uint8_t right) {
     double rotation = right? -ROTSPEED : ROTSPEED;
 
@@ -82,11 +108,11 @@ void movePlayer(Player *player) {
     double nextStepX = player->dirX * STEP_SIZE;
     double nextStepY = player->dirY * STEP_SIZE;
 
-    if (pgm_read_byte(&level_map[int(player->y)][int(player->x + nextStepX)]) == 0) {
+    if (pgm_read_byte(&level_map[int(player->y)][int(player->x + nextStepX)]) != 1) {
         player->x += nextStepX;
-     }
+     } 
 
-    if (pgm_read_byte(&level_map[int(player->y + nextStepY)][int(player->x)]) == 0) {
+    if (pgm_read_byte(&level_map[int(player->y + nextStepY)][int(player->x)]) != 1) {
         player->y += nextStepY;
      }
   }
@@ -95,11 +121,11 @@ void movePlayer(Player *player) {
     double nextStepX = player->dirX * STEP_SIZE;
     double nextStepY = player->dirY * STEP_SIZE;
 
-    if (pgm_read_byte(&level_map[int(player->y)][int(player->x + nextStepX)]) == 0) {
+    if (pgm_read_byte(&level_map[int(player->y)][int(player->x + nextStepX)]) != 1) {
         player->x -= nextStepX;
      }
 
-    if (pgm_read_byte(&level_map[int(player->y + nextStepY)][int(player->x)]) == 0) {
+    if (pgm_read_byte(&level_map[int(player->y + nextStepY)][int(player->x)]) != 1) {
         player->y -= nextStepY;
      }
   }

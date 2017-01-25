@@ -41,7 +41,7 @@ void drawFloorLine(uint8_t x, uint8_t drawEnd) {
   drawLine(x, DISP_HEIGHT ,drawEnd + 2);
 }
 
-void doRayCasting(Player *player) {
+void doRayCasting(Player *player, Target *target) {
   for (uint8_t x = 0; x < DISP_WIDTH; x++) {
     //calculate ray position and direction
     double cameraX = 2 * x / (double)(DISP_WIDTH) - 1; //x-coordinate in camera space from -1 to 1
@@ -60,6 +60,9 @@ void doRayCasting(Player *player) {
     double sideDistX = 0;
     double sideDistY = 0;
 
+    // perpendicular distance to wall
+    double perpWallDist = 0;
+
     //length of ray from one x or y-side to next x or y-side
     if (rayDirX != 0) {
       deltaDistX = sqrt(1 + (rayDirY * rayDirY) / (rayDirX * rayDirX));
@@ -73,7 +76,6 @@ void doRayCasting(Player *player) {
       deltaDistY = 99999;
     }
 
-    double perpWallDist = 0;
 
     //what direction to step in x or y-direction (either +1 or -1)
     int stepX = 0;
@@ -100,7 +102,7 @@ void doRayCasting(Player *player) {
     }
 
     //DDA
-    while (!hit ) {
+    while (!hit) {
       if (sideDistX < sideDistY) {
         sideDistX += deltaDistX;
         mapX += stepX;
@@ -110,11 +112,14 @@ void doRayCasting(Player *player) {
         mapY += stepY;
         side = 1;
       }
-
-      // Check if ray has hit a wall
       uint8_t mapData = pgm_read_byte(&level_map[mapY][mapX]);
-
-      mapData != 0 ? hit = 1 : hit = 0;
+      for (uint8_t i = 0; i < NBR_OF_TARGETS; i++){
+        if (target[i].xPos == mapX && target[i].yPos == mapY){
+          target[i].visible = 1;
+        }
+      }
+      // Check if ray has hit a wall
+      mapData == 1 ? hit = 1 : hit = 0;
 
     }
     D(Serial.print("map: "));
@@ -148,4 +153,3 @@ void doRayCasting(Player *player) {
     }
   }
 }
-

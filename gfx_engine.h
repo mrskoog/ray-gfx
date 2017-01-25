@@ -3,7 +3,7 @@
 
 
 
-void doRayCasting(Player *player);
+void doRayCasting(Player *player, Target *target);
 void drawWallLine(uint8_t x, uint8_t h, uint8_t side);
 void drawLine(int16_t x, int16_t y0, int16_t y1);
 void drawShadedLine(int16_t x, int16_t y0, int16_t y1);

@@ -13,10 +13,12 @@
 Adafruit_SSD1306 display(OLED_RESET);
 
 void timer_IRQ();
+void drawFrame(Target *target, Player *player);
+void resetTargets(Target *target);
 
 volatile uint8_t timer_flag = 0;
 
-void setup()  {
+void setup() {
   D(Serial.begin(9600));
 
   pinMode(UP_BUTTON, INPUT_PULLUP);
@@ -31,7 +33,24 @@ void setup()  {
   display.display(); //init display
 }
 
+void drawFrame(Target *target, Player *player) {
+  display.clearDisplay();
+  resetTargets(target);
+  doRayCasting(player, target);
+  drawTarget(player, target);
+  disp_player_posistion(player);
+  drawHUD();
+  display.display();
+}
+
+void resetTargets(Target *target) {
+  for (uint8_t i = 0; i < NBR_OF_TARGETS; i++) {
+    target[i].visible = 0;
+  }
+}
+
 void loop() {
+  //New player
   Player player;
   player.x = 2;
   player.y = 3;
@@ -39,17 +58,16 @@ void loop() {
   player.dirY = 0;
   player.planeX = 0;
   player.planeY = 0.66;
-  display.clearDisplay();
-  doRayCasting(&player);
-  display.display();
+
+  Target target[NBR_OF_TARGETS]  {
+    {2, 7, 0},
+    {6, 3, 0}
+  };
+
   while (1) {
     if (timer_flag) {
-      display.clearDisplay();
       movePlayer(&player);
-      doRayCasting(&player);
-      disp_player_posistion(&player);
-      drawHUD();
-      display.display();
+      drawFrame(&target[0], &player);
       timer_flag = 0;
     }
   }
