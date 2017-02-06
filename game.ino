@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define D(x)
+
 const uint8_t level_map[][35] PROGMEM =
 {
   {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
@@ -53,7 +55,7 @@ const uint8_t gunBitmap [] PROGMEM = {
 void disp_player_posistion (Player *player) {
   int n = 0;
   char buffer [10];
-  n = snprintf (buffer, 12, "%d:%d", (int)player->x, (int)player->y);
+  n = snprintf (buffer, 10, "%d:%d", (int)player->x, (int)player->y);
   n--;
   while(n >= 0){
     display.drawChar(1+n*6, 56, buffer[n], BLACK, WHITE, 1);
@@ -61,14 +63,34 @@ void disp_player_posistion (Player *player) {
   }
 }
 
-void drawHUD() {
+void drawHUD(Player *player) {
+  char buffer [5];
+  int n = 0;
+
   display.drawBitmap((DISP_WIDTH/2) - 6, DISP_HEIGHT-16, gunBitmap, 16, 16, BLACK);
+  disp_player_posistion(player);
+  //draw score
+  n = snprintf (buffer, 5, "P:%d", (int)player->points);
+  n--;
+  while(n >= 0){
+    display.drawChar(98+n*6, 56, buffer[n], BLACK, WHITE, 1);
+    n--;
+  }
 }
 
+/*Sets player in shooting state.
+  Collision detection happens in drawTarget function*/
+void playerShoot(Player *player) {
+  if (digitalRead(SHOOT_BUTTON) == 0) {
+    player->shooting = 1;
+  }
+}
+
+ /*limitation: to reduce calculations no target sorting is done -> only one target can be visible at a time*/
 void drawTarget(Player *player, Target *target) {
   for (uint8_t i  = 0; i < NBR_OF_TARGETS; i++) {
-    if (target[i].visible) {
-      //translate sprite position to relative to camer
+    if (target[i].visible && !target[i].destroyed) {
+      //translate sprite position to relative to camera
       double spriteX = target[i].xPos - player->x;
       double spriteY = target[i].yPos - player->y;
 
@@ -86,10 +108,18 @@ void drawTarget(Player *player, Target *target) {
 
       int16_t spriteHeight = abs(int(DISP_HEIGHT / (transformY)));
 
-      display.fillCircle(spriteScreenX, CAMERA_HEIGHT, spriteHeight >> 2, BLACK);
-      display.fillCircle(spriteScreenX, CAMERA_HEIGHT, spriteHeight >> 3, WHITE);
-      display.fillCircle(spriteScreenX, CAMERA_HEIGHT, spriteHeight >> 4, BLACK);
-
+      //check i center screen is inside target
+      if (player->shooting && DISP_WIDTH/2 >= (spriteScreenX - (spriteHeight >> 2))  && 
+          DISP_WIDTH/2 <= (spriteScreenX + (spriteHeight >> 2))) {
+        //play shooting sound
+        target[i].destroyed = 1;
+        player->points += 1;
+      } else {
+        display.fillCircle(spriteScreenX, CAMERA_HEIGHT, spriteHeight >> 2, BLACK);
+        display.fillCircle(spriteScreenX, CAMERA_HEIGHT, spriteHeight >> 3, WHITE);
+        display.fillCircle(spriteScreenX, CAMERA_HEIGHT, spriteHeight >> 4, BLACK);
+      }
+      return; //only one target visible a time
     }
   }
 }

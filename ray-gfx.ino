@@ -21,9 +21,7 @@ volatile uint8_t timer_flag = 0;
 void setup() {
   D(Serial.begin(9600));
 
-  pinMode(UP_BUTTON, INPUT_PULLUP);
-  pinMode(LEFT_BUTTON, INPUT_PULLUP);
-  pinMode(RIGHT_BUTTON, INPUT_PULLUP);
+  pinMode(SHOOT_BUTTON, INPUT_PULLUP);
 
   Timer1.initialize(50000); 
   Timer1.attachInterrupt(timer_IRQ);
@@ -38,8 +36,7 @@ void drawFrame(Target *target, Player *player) {
   resetTargets(target);
   doRayCasting(player, target);
   drawTarget(player, target);
-  disp_player_posistion(player);
-  drawHUD();
+  drawHUD(player);
   display.display();
 }
 
@@ -58,16 +55,20 @@ void loop() {
   player.dirY = 0;
   player.planeX = 0;
   player.planeY = 0.66;
+  player.shooting = 0;
+  player.points = 0;
 
   Target target[NBR_OF_TARGETS]  {
-    {2, 7, 0},
-    {6, 3, 0}
+    {2, 7, 0, 0},
+    {6, 3, 0, 0}
   };
 
   while (1) {
     if (timer_flag) {
       movePlayer(&player);
+      playerShoot(&player);
       drawFrame(&target[0], &player);
+      player.shooting = 0;
       timer_flag = 0;
     }
   }

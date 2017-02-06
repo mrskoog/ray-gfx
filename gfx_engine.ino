@@ -114,7 +114,7 @@ void doRayCasting(Player *player, Target *target) {
       }
       uint8_t mapData = pgm_read_byte(&level_map[mapY][mapX]);
       for (uint8_t i = 0; i < NBR_OF_TARGETS; i++){
-        if (target[i].xPos == mapX && target[i].yPos == mapY){
+        if (!target[i].destroyed && target[i].xPos == mapX && target[i].yPos == mapY){
           target[i].visible = 1;
         }
       }
@@ -122,12 +122,12 @@ void doRayCasting(Player *player, Target *target) {
       mapData == 1 ? hit = 1 : hit = 0;
 
     }
-    D(Serial.print("map: "));
-    D(Serial.print(mapY));
-    D(Serial.print(", "));
-    D(Serial.print(mapX));
-    D(Serial.print(" - "));
-    D(Serial.println(level_map[mapY][mapX]));
+    // D(Serial.print("map: "));
+    // D(Serial.print(mapY));
+    // D(Serial.print(", "));
+    // D(Serial.print(mapX));
+    // D(Serial.print(" - "));
+    // D(Serial.println(level_map[mapY][mapX]));
 
     // Calculate distance to point of impact
     if (side == 0) {
@@ -137,8 +137,8 @@ void doRayCasting(Player *player, Target *target) {
       perpWallDist = sqrt(((mapY - player->y + (1 - stepY) / 2) / rayDirY) * ((mapY - player->y + (1 - stepY) / 2) / rayDirY));
     }
     
-    D(Serial.print("\nperpWallDist: "));
-    D(Serial.println(perpWallDist, 3));
+    // D(Serial.print("\nperpWallDist: "));
+    // D(Serial.println(perpWallDist, 3));
     
     uint8_t lineHeight;
     if (perpWallDist >= 1) { //values under 1 makes screen glitch
