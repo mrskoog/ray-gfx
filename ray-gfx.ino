@@ -35,7 +35,7 @@ void drawFrame(Target *target, Player *player) {
   display.clearDisplay();
   resetTargets(target);
   doRayCasting(player, target);
-  drawTarget(player, target);
+  drawSprite(player, target);
   drawHUD(player);
   display.display();
 }

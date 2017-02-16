@@ -79,7 +79,7 @@ void drawHUD(Player *player) {
 }
 
 /*Sets player in shooting state.
-  Collision detection happens in drawTarget function*/
+  Collision detection happens in drawSprite function*/
 void playerShoot(Player *player) {
   if (digitalRead(SHOOT_BUTTON) == 0) {
     player->shooting = 1;
@@ -87,7 +87,7 @@ void playerShoot(Player *player) {
 }
 
  /*limitation: to reduce calculations no target sorting is done -> only one target can be visible at a time*/
-void drawTarget(Player *player, Target *target) {
+void drawSprite(Player *player, Target *target) {
   for (uint8_t i  = 0; i < NBR_OF_TARGETS; i++) {
     if (target[i].visible && !target[i].destroyed) {
       //translate sprite position to relative to camera
@@ -115,9 +115,11 @@ void drawTarget(Player *player, Target *target) {
         target[i].destroyed = 1;
         player->points += 1;
       } else {
-        display.fillCircle(spriteScreenX, CAMERA_HEIGHT, spriteHeight >> 2, BLACK);
-        display.fillCircle(spriteScreenX, CAMERA_HEIGHT, spriteHeight >> 3, WHITE);
-        display.fillCircle(spriteScreenX, CAMERA_HEIGHT, spriteHeight >> 4, BLACK);
+        display.drawCircle(spriteScreenX, CAMERA_HEIGHT, spriteHeight >> 2, BLACK);
+        display.fillCircle(spriteScreenX, CAMERA_HEIGHT, (spriteHeight >> 2) - 1, WHITE);
+        display.fillCircle(spriteScreenX + (spriteHeight >> 3), CAMERA_HEIGHT - (spriteHeight >> 4), spriteHeight >> 4, BLACK);
+        display.fillCircle(spriteScreenX - (spriteHeight >> 3), CAMERA_HEIGHT - (spriteHeight >> 4), spriteHeight >> 4, BLACK);
+        display.drawLine(spriteScreenX + (spriteHeight >> 4), CAMERA_HEIGHT + (spriteHeight >> 3), spriteScreenX - (spriteHeight >> 4), CAMERA_HEIGHT + (spriteHeight >> 3), BLACK);
       }
       return; //only one target visible a time
     }

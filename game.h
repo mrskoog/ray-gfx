@@ -31,6 +31,6 @@ typedef struct target {
 void rotatePlayer(Player *player, uint8_t right);
 void movePlayer(Player *player);
 void disp_player_posistion (Player *player);
-void drawTarget(Player *player, Target *target);
+void drawSprite(Player *player, Target *target);
 void playerShoot(Player *player);
 #endif /* GAME_H */
