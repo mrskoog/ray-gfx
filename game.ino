@@ -67,7 +67,12 @@ void drawHUD(Player *player) {
   char buffer [5];
   int n = 0;
 
-  display.drawBitmap((DISP_WIDTH/2) - 6, DISP_HEIGHT-16, gunBitmap, 16, 16, BLACK);
+  display.drawBitmap((DISP_WIDTH/2) - 8, DISP_HEIGHT-16, gunBitmap, 16, 16, BLACK);
+
+  if (player->shooting) {
+    display.fillRect((DISP_WIDTH/2) - 4, DISP_HEIGHT-12, 8, 5, WHITE);
+  }
+
   disp_player_posistion(player);
   //draw score
   n = snprintf (buffer, 5, "P:%d", (int)player->points);
@@ -86,13 +91,13 @@ void playerShoot(Player *player) {
   }
 }
 
- /*limitation: to reduce calculations no target sorting is done -> only one target can be visible at a time*/
-void drawSprite(Player *player, Target *target) {
-  for (uint8_t i  = 0; i < NBR_OF_TARGETS; i++) {
-    if (target[i].visible && !target[i].destroyed) {
+ /*limitation: to reduce calculations no enemy sorting is done -> only one enemy can be visible at a time*/
+void drawSprite(Player *player, Enemy *enemy) {
+  for (uint8_t i  = 0; i < NBR_OF_ENEMIES; i++) {
+    if (enemy[i].visible && !enemy[i].destroyed) {
       //translate sprite position to relative to camera
-      double spriteX = target[i].xPos - player->x;
-      double spriteY = target[i].yPos - player->y;
+      double spriteX = enemy[i].xPos - player->x;
+      double spriteY = enemy[i].yPos - player->y;
 
       //transform sprite with the inverse camera matrix (projection in camera plain)
       // [ planeX   dirX ] -1                                       [ dirY      -dirX ]
@@ -108,12 +113,17 @@ void drawSprite(Player *player, Target *target) {
 
       int16_t spriteHeight = abs(int(DISP_HEIGHT / (transformY)));
 
-      //check i center screen is inside target
+      //check i center screen is inside enemy
       if (player->shooting && DISP_WIDTH/2 >= (spriteScreenX - (spriteHeight >> 2))  && 
           DISP_WIDTH/2 <= (spriteScreenX + (spriteHeight >> 2))) {
         //play shooting sound
-        target[i].destroyed = 1;
+        enemy[i].destroyed = 1;
         player->points += 1;
+                display.drawCircle(spriteScreenX, CAMERA_HEIGHT, spriteHeight >> 2, WHITE);
+        display.fillCircle(spriteScreenX, CAMERA_HEIGHT, (spriteHeight >> 2) - 1, BLACK);
+        display.fillCircle(spriteScreenX + (spriteHeight >> 3), CAMERA_HEIGHT - (spriteHeight >> 4), spriteHeight >> 4, WHITE);
+        display.fillCircle(spriteScreenX - (spriteHeight >> 3), CAMERA_HEIGHT - (spriteHeight >> 4), spriteHeight >> 4, WHITE);
+        display.drawLine(spriteScreenX + (spriteHeight >> 4), CAMERA_HEIGHT + (spriteHeight >> 3), spriteScreenX - (spriteHeight >> 4), CAMERA_HEIGHT + (spriteHeight >> 3), WHITE);
       } else {
         display.drawCircle(spriteScreenX, CAMERA_HEIGHT, spriteHeight >> 2, BLACK);
         display.fillCircle(spriteScreenX, CAMERA_HEIGHT, (spriteHeight >> 2) - 1, WHITE);
@@ -121,7 +131,7 @@ void drawSprite(Player *player, Target *target) {
         display.fillCircle(spriteScreenX - (spriteHeight >> 3), CAMERA_HEIGHT - (spriteHeight >> 4), spriteHeight >> 4, BLACK);
         display.drawLine(spriteScreenX + (spriteHeight >> 4), CAMERA_HEIGHT + (spriteHeight >> 3), spriteScreenX - (spriteHeight >> 4), CAMERA_HEIGHT + (spriteHeight >> 3), BLACK);
       }
-      return; //only one target visible a time
+      return; //only one enemy visible a time
     }
   }
 }
@@ -171,5 +181,14 @@ void movePlayer(Player *player) {
   if (analogRead(A0) < 200) {
     rotatePlayer(player, RIGHT);
   }
+}
+
+void theEnd() {
+  display.setCursor(24,12);
+  display.setTextColor(BLACK, WHITE);
+  display.setTextSize(2);
+  display.print("MISSION");
+  display.setCursor(12,30);
+  display.print("COMPLETED");
 }
 

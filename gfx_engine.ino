@@ -41,7 +41,7 @@ void drawFloorLine(uint8_t x, uint8_t drawEnd) {
   drawLine(x, DISP_HEIGHT ,drawEnd + 2);
 }
 
-void doRayCasting(Player *player, Target *target) {
+void doRayCasting(Player *player, Enemy *enemy) {
   for (uint8_t x = 0; x < DISP_WIDTH; x++) {
     //calculate ray position and direction
     double cameraX = 2 * x / (double)(DISP_WIDTH) - 1; //x-coordinate in camera space from -1 to 1
@@ -113,9 +113,9 @@ void doRayCasting(Player *player, Target *target) {
         side = 1;
       }
       uint8_t mapData = pgm_read_byte(&level_map[mapY][mapX]);
-      for (uint8_t i = 0; i < NBR_OF_TARGETS; i++){
-        if (!target[i].destroyed && target[i].xPos == mapX && target[i].yPos == mapY){
-          target[i].visible = 1;
+      for (uint8_t i = 0; i < NBR_OF_ENEMIES; i++){
+        if (!enemy[i].destroyed && enemy[i].xPos == mapX && enemy[i].yPos == mapY){
+          enemy[i].visible = 1;
         }
       }
       // Check if ray has hit a wall

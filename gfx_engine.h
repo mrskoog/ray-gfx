@@ -1,7 +1,7 @@
 #ifndef GFXENGINE_H
 #define GFXENGINE_H
 
-void doRayCasting(Player *player, Target *target);
+void doRayCasting(Player *player, Enemy *enemy);
 void drawWallLine(uint8_t x, uint8_t h, uint8_t side);
 void drawLine(int16_t x, int16_t y0, int16_t y1);
 void drawShadedLine(int16_t x, int16_t y0, int16_t y1);

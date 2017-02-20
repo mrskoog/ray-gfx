@@ -13,8 +13,8 @@
 Adafruit_SSD1306 display(OLED_RESET);
 
 void timer_IRQ();
-void drawFrame(Target *target, Player *player);
-void resetTargets(Target *target);
+void drawFrame(Enemy *enemy, Player *player);
+void resetEnemys(Enemy *enemy);
 
 volatile uint8_t timer_flag = 0;
 
@@ -31,18 +31,21 @@ void setup() {
   display.display(); //init display
 }
 
-void drawFrame(Target *target, Player *player) {
+void drawFrame(Enemy *enemy, Player *player) {
   display.clearDisplay();
-  resetTargets(target);
-  doRayCasting(player, target);
-  drawSprite(player, target);
+  resetEnemys(enemy);
+  doRayCasting(player, enemy);
+  drawSprite(player, enemy);
   drawHUD(player);
+  if (player->points == NBR_OF_ENEMIES) {
+    theEnd();
+  }
   display.display();
 }
 
-void resetTargets(Target *target) {
-  for (uint8_t i = 0; i < NBR_OF_TARGETS; i++) {
-    target[i].visible = 0;
+void resetEnemys(Enemy *enemy) {
+  for (uint8_t i = 0; i < NBR_OF_ENEMIES; i++) {
+    enemy[i].visible = 0;
   }
 }
 
@@ -58,16 +61,21 @@ void loop() {
   player.shooting = 0;
   player.points = 0;
 
-  Target target[NBR_OF_TARGETS]  {
+  Enemy enemy[NBR_OF_ENEMIES]  {
     {2, 7, 0, 0},
-    {6, 3, 0, 0}
+    {6, 3, 0, 0},
+    {2, 11, 0, 0},
+    {11, 22, 0, 0},
+    {21, 17, 0, 0},
+    {32, 32, 0, 0}
   };
 
   while (1) {
     if (timer_flag) {
       movePlayer(&player);
       playerShoot(&player);
-      drawFrame(&target[0], &player);
+      drawFrame(&enemy[0], &player);
+
       player.shooting = 0;
       timer_flag = 0;
     }
