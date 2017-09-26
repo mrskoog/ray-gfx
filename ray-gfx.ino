@@ -6,7 +6,7 @@
 #include "game.h"
 #include "gfx_engine.h"
 
-#define D(x)
+#define D(x) x
 
 #define I2C_ADDRESS 0x3C
 #define OLED_RESET 3 //not used but needed by lib
@@ -22,6 +22,7 @@ void setup() {
   D(Serial.begin(9600));
 
   pinMode(SHOOT_BUTTON, INPUT_PULLUP);
+  pinMode(SHOOT_BUTTON2, INPUT_PULLUP);
 
   Timer1.initialize(50000); 
   Timer1.attachInterrupt(timer_IRQ);

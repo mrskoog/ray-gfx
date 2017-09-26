@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define D(x)
+#define D(x) x
 
 const uint8_t level_map[][35] PROGMEM =
 {
@@ -86,7 +86,7 @@ void drawHUD(Player *player) {
 /*Sets player in shooting state.
   Collision detection happens in drawSprite function*/
 void playerShoot(Player *player) {
-  if (digitalRead(SHOOT_BUTTON) == 0) {
+  if (digitalRead(SHOOT_BUTTON) == 0 || digitalRead(SHOOT_BUTTON2) == 0) {
     player->shooting = 1;
   }
 }
@@ -152,7 +152,7 @@ void movePlayer(Player *player) {
   double nextStepX = player->dirX * STEP_SIZE;
   double nextStepY = player->dirY * STEP_SIZE;
 
-  if ( analogRead(A1) < 200) {
+  if ( analogRead(A1) > 200) {
 
     if (pgm_read_byte(&level_map[int(player->y)][int(player->x + nextStepX)]) != 1) {
         player->x += nextStepX;
@@ -163,7 +163,7 @@ void movePlayer(Player *player) {
      }
   }
 
-    if (analogRead(A1) > 700) {
+    if (analogRead(A1) < 700) {
 
     if (pgm_read_byte(&level_map[int(player->y)][int(player->x - nextStepX)]) != 1) {
         player->x -= nextStepX;

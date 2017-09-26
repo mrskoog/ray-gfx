@@ -4,7 +4,8 @@
 /*Game*/
 #define ROTSPEED 0.1
 #define STEP_SIZE 0.2
-#define SHOOT_BUTTON 10
+#define SHOOT_BUTTON 12
+#define SHOOT_BUTTON2 9
 #define RIGHT 0
 #define LEFT 1
 
